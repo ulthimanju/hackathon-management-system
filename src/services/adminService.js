@@ -1,7 +1,8 @@
 const BASE_URL = `${import.meta.env.VITE_API_BASE || ''}/api/admin`;
 
 function authHeaders() {
-  const token = (typeof localStorage !== 'undefined' && localStorage.getItem('adminApiToken')) || 'admin-token';
+  // Prefer explicit environment-provided token for demo deployments
+  const token = import.meta.env.VITE_ADMIN_API_TOKEN || (typeof localStorage !== 'undefined' && localStorage.getItem('adminApiToken')) || 'admin-token';
   return {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'

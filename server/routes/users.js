@@ -6,7 +6,14 @@ const router = Router();
 
 // Middleware to authenticate normal user via auth_token cookie
 router.use(async (req, res, next) => {
-  const token = req.cookies?.auth_token;
+  // Accept JWT from cookie OR Authorization Bearer header (cross-origin flow)
+  let token = req.cookies?.auth_token;
+  if (!token) {
+    const auth = req.headers.authorization;
+    if (auth && auth.startsWith('Bearer ')) {
+      token = auth.substring(7);
+    }
+  }
   if (!token) return res.status(401).json({ error: 'Not authenticated' });
   try {
     const decoded = verifyJwt(token);

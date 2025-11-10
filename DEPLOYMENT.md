@@ -146,11 +146,12 @@ mongodb+srv://umanjunath2763_db_user:<db_password>@hms.sateoss.mongodb.net/hacka
    - **Install Command**: `npm install`
 
 5. **Add Environment Variables**:
-   - Click "Environment Variables"
-   - Add:
-     ```
-     VITE_API_BASE=https://hackathon-backend.onrender.com
-     ```
+    - Click "Environment Variables"
+    - Add:
+       ```
+       VITE_API_BASE=https://hackathon-backend.onrender.com
+       VITE_ADMIN_API_TOKEN=<same-as-Render-ADMIN_API_TOKEN>
+       ```
      (Use your actual Render backend URL from Step 3)
 
 6. Click "Deploy"

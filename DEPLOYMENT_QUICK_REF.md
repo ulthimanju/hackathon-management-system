@@ -25,10 +25,11 @@ CLIENT_ORIGIN=https://<your-app-name>.vercel.app
 
 ## Frontend Environment Variables for Vercel
 
-When deploying to Vercel, set this environment variable:
+When deploying to Vercel, set these environment variables:
 
-```
+```bash
 VITE_API_BASE=https://<your-service-name>.onrender.com
+VITE_ADMIN_API_TOKEN=<same-as-Render-ADMIN_API_TOKEN>
 ```
 
 ## Build Configuration
