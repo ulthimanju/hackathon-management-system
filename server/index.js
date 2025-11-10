@@ -45,19 +45,23 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const isDev = NODE_ENV !== 'production';
 
-// CORS configuration with explicit origin function (helps when future multiple origins needed)
+// CORS configuration supporting multiple origins (comma-separated CLIENT_ORIGIN) + Vercel preview domains
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (origin === CLIENT_ORIGIN) {
+  const configured = (process.env.CLIENT_ORIGIN || '').split(',').map(o => o.trim()).filter(Boolean);
+  const normalize = (url) => (url || '').replace(/\/$/, '');
+  const originNorm = normalize(origin);
+  const match = configured.map(normalize).includes(originNorm);
+  // Allow Vercel preview domains automatically (ends with .vercel.app) if not explicitly configured
+  const vercelPreview = originNorm && /\.vercel\.app$/.test(new URL(originNorm).hostname);
+  if (match || vercelPreview) {
     res.header('Access-Control-Allow-Origin', origin);
   }
   res.header('Vary', 'Origin');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
-  }
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
 
