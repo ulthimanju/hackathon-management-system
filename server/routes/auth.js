@@ -197,15 +197,33 @@ router.get('/google/callback', (req, res, next) => {
       roleRequests: dbUser?.roleRequests || []
     });
     setAuthCookie(res, token);
+    
+    // For cross-origin deployments, also pass token in URL so frontend can store it
+    const target = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+    const isProduction = process.env.NODE_ENV === 'production';
+    if (isProduction) {
+      // In production (cross-origin), pass token in URL
+      res.redirect(`${target}/?login=success&token=${encodeURIComponent(token)}`);
+    } else {
+      // In development (same-origin), cookie is enough
+      res.redirect(`${target}/?login=success`);
+    }
   } catch (e) {
     console.error('Error enriching login token with roles', e);
+    const target = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+    res.redirect(`${target}/?login=error`);
   }
-  const target = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
-  res.redirect(`${target}/?login=success`);
 });
 
 router.get('/me', async (req, res) => {
-  const token = req.cookies?.auth_token;
+  // Accept token from cookie OR Authorization header (for cross-origin)
+  let token = req.cookies?.auth_token;
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+  }
   if (!token) return res.status(401).json({ authenticated: false });
   const decoded = verifyJwt(token);
   if (!decoded) return res.status(401).json({ authenticated: false });

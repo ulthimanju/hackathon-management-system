@@ -14,9 +14,18 @@ export function AuthProvider({ children }) {
   const fetchMe = useCallback(async () => {
     try {
       setError(null);
-      const res = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
+      const headers = { 'Content-Type': 'application/json' };
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const res = await fetch(`${API_BASE}/auth/me`, { 
+        credentials: 'include',
+        headers
+      });
       if (res.status === 401) {
         setUser(null);
+        localStorage.removeItem('auth_token'); // Clear invalid token
         return;
       }
       if (!res.ok) throw new Error(`Failed /auth/me: ${res.status}`);
@@ -51,6 +60,7 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.warn('Logout error (ignored)', err);
     }
+    localStorage.removeItem('auth_token'); // Clear token
     setUser(null);
     // Optionally force a reload or navigate
   }, []);
@@ -91,15 +101,28 @@ export function AuthProvider({ children }) {
     if (initRef.current) return;
     initRef.current = true;
 
-    // If redirected back with login=success ensure we fetch fresh user
+    // Check if redirected back with token in URL (for cross-origin deployments)
     const url = new URL(window.location.href);
+    const token = url.searchParams.get('token');
     const fromLogin = url.searchParams.get('login') === 'success';
-    fetchMe().finally(() => setLoading(false));
+    
+    if (token) {
+      // Store token in localStorage for cross-origin auth
+      localStorage.setItem('auth_token', token);
+      // Clean token from URL immediately for security
+      url.searchParams.delete('token');
+    }
+    
     if (fromLogin) {
       // Clean query param for aesthetics
       url.searchParams.delete('login');
+    }
+    
+    if (token || fromLogin) {
       window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
     }
+    
+    fetchMe().finally(() => setLoading(false));
   }, [fetchMe]);
 
   const value = {

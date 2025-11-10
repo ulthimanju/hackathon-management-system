@@ -3,13 +3,20 @@ const API_BASE = import.meta.env.VITE_API_BASE || '';
 async function request(path, { method = 'GET', body, headers = {}, ...rest } = {}) {
 	console.log(`Making ${method} request to ${API_BASE}${path}`);
 	
+	// Add Authorization header if token exists in localStorage
+	const token = localStorage.getItem('auth_token');
+	const authHeaders = {
+		'Content-Type': 'application/json',
+		...headers
+	};
+	if (token) {
+		authHeaders['Authorization'] = `Bearer ${token}`;
+	}
+	
 	const res = await fetch(`${API_BASE}${path}`, {
 		method,
 		credentials: 'include',
-		headers: {
-			'Content-Type': 'application/json',
-			...headers
-		},
+		headers: authHeaders,
 		body: body ? JSON.stringify(body) : undefined,
 		...rest
 	});
