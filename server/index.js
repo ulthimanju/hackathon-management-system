@@ -8,18 +8,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const envPath = path.join(__dirname, '.env');
 
-// Check if the .env file exists
-if (!fs.existsSync(envPath)) {
-  console.error(`ERROR: Environment file not found at ${envPath}`);
-  console.error('Create .env file with GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and other required variables');
-} else {
+// Check if the .env file exists (only needed for local development)
+if (fs.existsSync(envPath)) {
   console.log(`Loading env from: ${envPath}`);
   const result = dotenv.config({ path: envPath });
   if (result.error) {
     console.error(`Error loading .env file: ${result.error.message}`);
   } else {
-    console.log('Environment loaded successfully');
+    console.log('Environment loaded successfully from .env file');
   }
+} else {
+  console.log('No .env file found - using environment variables from hosting platform');
 }
 import express from 'express';
 import http from 'http';
