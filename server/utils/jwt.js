@@ -22,10 +22,12 @@ export function verifyJwt(token) {
 }
 
 export function setAuthCookie(res, token) {
+  const isProduction = process.env.NODE_ENV === 'production';
   res.cookie('auth_token', token, {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: false // set true behind HTTPS in prod
+    sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-site cookies
+    secure: isProduction, // must be true when sameSite='none'
+    maxAge: 3600000 // 1 hour in milliseconds
   });
 }
 
