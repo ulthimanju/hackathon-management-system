@@ -31,7 +31,6 @@ export function Avatar({ src, name = 'User', size = 'md', className = '' }) {
           src={src}
           alt={name}
           referrerPolicy="no-referrer"
-          crossOrigin="anonymous"
           loading="lazy"
           className="absolute inset-0 w-full h-full object-cover"
           onError={() => setErrored(true)}
