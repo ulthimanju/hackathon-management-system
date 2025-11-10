@@ -1,0 +1,110 @@
+# Deployment Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        USER'S BROWSER                            │
+│                   https://your-app.vercel.app                   │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+                            │ (HTTPS Requests)
+                            ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                    VERCEL (Frontend Host)                        │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │  React App (Built with Vite)                               │ │
+│  │  - Static HTML, CSS, JS                                    │ │
+│  │  - Served via CDN                                          │ │
+│  │  - Environment: VITE_API_BASE                              │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+                            │ (API Calls to VITE_API_BASE)
+                            ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                  RENDER (Backend Host)                           │
+│           https://your-backend.onrender.com                     │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │  Node.js + Express Server                                  │ │
+│  │  - REST API Endpoints                                      │ │
+│  │  - Socket.io for real-time updates                         │ │
+│  │  - Google OAuth authentication                             │ │
+│  │  - JWT token management                                    │ │
+│  │  Environment Variables:                                    │ │
+│  │    • MONGODB_URI                                           │ │
+│  │    • GOOGLE_CLIENT_ID / SECRET                             │ │
+│  │    • JWT_SECRET                                            │ │
+│  │    • CLIENT_ORIGIN (Vercel URL)                            │ │
+│  └────────────────┬───────────────────────────────────────────┘ │
+└───────────────────┼─────────────────────────────────────────────┘
+                    │
+                    │ (MongoDB Queries)
+                    ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                 MONGODB ATLAS (Database)                         │
+│     mongodb+srv://...@hms.sateoss.mongodb.net/hackathons        │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │  Collections:                                              │ │
+│  │    • users                                                 │ │
+│  │    • hackathons                                            │ │
+│  │    • registrations                                         │ │
+│  │    • teams                                                 │ │
+│  │    • adminauditlogs                                        │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│  Free Tier: 512MB Storage                                       │
+└─────────────────────────────────────────────────────────────────┘
+
+
+                            ↕
+                            
+┌─────────────────────────────────────────────────────────────────┐
+│              GOOGLE OAUTH 2.0 (Authentication)                   │
+│                https://accounts.google.com                       │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │  OAuth Flow:                                               │ │
+│  │  1. User clicks "Login with Google"                        │ │
+│  │  2. Redirected to Google login                             │ │
+│  │  3. User authorizes app                                    │ │
+│  │  4. Google redirects to backend callback                   │ │
+│  │  5. Backend creates JWT and redirects to frontend          │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+
+
+DEPLOYMENT FLOW:
+═══════════════
+
+1. CODE → GitHub Repository
+   ↓
+2. Vercel (auto-detects changes) → Builds & Deploys Frontend
+   ↓
+3. Render (auto-detects changes) → Builds & Deploys Backend
+   ↓
+4. Both services communicate via environment variables
+
+
+KEY CONFIGURATION:
+═════════════════
+
+Vercel Environment:
+  VITE_API_BASE = https://your-backend.onrender.com
+
+Render Environment:
+  CLIENT_ORIGIN = https://your-app.vercel.app
+  MONGODB_URI = mongodb+srv://...
+  GOOGLE_CLIENT_ID = ...
+  GOOGLE_CLIENT_SECRET = ...
+
+Google OAuth Console:
+  Authorized Origins = https://your-app.vercel.app
+  Redirect URIs = https://your-backend.onrender.com/auth/google/callback
+
+
+COST BREAKDOWN:
+══════════════
+
+Vercel:        $0/month (Free Tier)
+Render:        $0/month (Free Tier - 750 hours)
+MongoDB Atlas: $0/month (Free Tier - 512MB)
+─────────────────────────────────────
+TOTAL:         $0/month ✅
+```
