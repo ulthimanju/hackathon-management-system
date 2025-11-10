@@ -2,9 +2,8 @@ import React, { createContext, useCallback, useEffect, useRef, useState } from '
 
 const AuthContext = createContext(null);
 
-// With Vite proxy configured, we can use relative URLs
-// This avoids CORS issues by letting the dev server proxy requests
-const API_BASE = ''; // Empty string means use relative URLs
+// Use environment variable for API base URL
+const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

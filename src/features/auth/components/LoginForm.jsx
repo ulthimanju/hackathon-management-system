@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button, Card, GoogleIcon } from '../../../shared/ui';
 
-// With Vite proxy configured, we can use relative URLs
-const API_BASE = '';
+// Use environment variable for API base URL
+const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 export default function LoginForm() {
     const handleGoogle = () => {
